@@ -40,15 +40,19 @@ User Query → Planner → Research (RAG + Web) → Analyst → Final Decision
 
 ### 🔹 UI Input
 
-![UI Input](screenshots/ui_input.png)
+![ui input](screenshots/ui_input.png)
 
 ### 🔹 Agent Reasoning Steps
 
-![Agent Flow](screenshots/agent_flow.png)
+![agent flow1](screenshots/agent_flow1.png)
+![agent flow2](screenshots/agent_flow2.png)
 
 ### 🔹 Final Output
 
-![Final Output](screenshots/output.png)
+![output1](screenshots/output1.png)
+![output2](screenshots/output2.png)
+![output3](screenshots/output3.png)
+
 
 ---
 
