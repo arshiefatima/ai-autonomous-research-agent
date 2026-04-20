@@ -2,7 +2,7 @@
 
 ## 🔗 Live Demo
 
-👉 https://your-live-demo-link.streamlit.app
+👉 https://ai-autonomous-research-agent-khtrxz62ggtitgqmm4bs6s.streamlit.app/
 
 ---
 
