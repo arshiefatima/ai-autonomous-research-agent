@@ -1,84 +1,55 @@
 from langgraph.graph import StateGraph, END
-import ollama
+from groq import Groq
+import os
 from rag_store import retrieve
 from tools import web_search
 from typing import TypedDict
 
-# Global model definition to ensure we use the lightweight version everywhere
-MODEL_NAME = "llama3.2:1b"
+# Initialize Groq Client
+# Ensure you add GROQ_API_KEY to your Streamlit Cloud Secrets!
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+MODEL_NAME = "llama-3.3-70b-versatile"
 
-# Define a proper TypedDict for the State
 class State(TypedDict):
     query: str
     plan: str
     research: str
     final: str
 
-# PLANNER
 def planner(state: State):
     print("--- 1. PLANNING ---")
-    query = state["query"]
-
-    response = ollama.chat(
+    response = client.chat.completions.create(
         model=MODEL_NAME,
-        messages=[{"role": "user", "content": f"Break into steps: {query}"}]
+        messages=[{"role": "user", "content": f"Break into steps: {state['query']}"}]
     )
+    return {"plan": response.choices[0].message.content}
 
-    return {"plan": response["message"]["content"]}
-
-
-# RESEARCH (RAG + WEB TOOL)
 def researcher(state: State):
     print("--- 2. RESEARCHING ---")
     query = state["query"]
-
-    # Safely calling your external files
     rag_data = retrieve(query)
     web_data = web_search(query)
-
     combined = f"{rag_data}\n{web_data}"
 
-    response = ollama.chat(
+    response = client.chat.completions.create(
         model=MODEL_NAME,
-        messages=[{
-            "role": "user",
-            "content": f"Use this data:\n{combined}\n\nQuestion:{query}"
-        }]
+        messages=[{"role": "user", "content": f"Data:\n{combined}\n\nQuestion:{query}"}]
     )
+    return {"research": response.choices[0].message.content}
 
-    return {"research": response["message"]["content"]}
-
-
-# ANALYST
 def analyst(state: State):
     print("--- 3. ANALYZING ---")
-    response = ollama.chat(
+    response = client.chat.completions.create(
         model=MODEL_NAME,
-        messages=[{
-            "role": "user",
-            "content": f"""
-Plan: {state['plan']}
-Research: {state['research']}
-
-Give final structured answer:
-- Summary
-- Comparison
-- Recommendation
-- Reason
-"""
-        }]
+        messages=[{"role": "user", "content": f"Plan: {state['plan']}\nResearch: {state['research']}\nFinal structured answer (Summary, Comparison, Recommendation, Reason):"}]
     )
+    return {"final": response.choices[0].message.content}
 
-    return {"final": response["message"]["content"]}
-
-
-# GRAPH CONSTRUCTION
+# Graph Construction remains the same
 graph = StateGraph(State)
-
 graph.add_node("planner", planner)
 graph.add_node("researcher", researcher)
 graph.add_node("analyst", analyst)
-
 graph.set_entry_point("planner")
 graph.add_edge("planner", "researcher")
 graph.add_edge("researcher", "analyst")
