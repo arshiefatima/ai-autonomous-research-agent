@@ -6,3 +6,6 @@ ollama
 faiss-cpu
 duckduckgo-search
 numpy
+groq
+langchain-groq
+sentence-transformers
